@@ -1,0 +1,21 @@
+{
+    "danisanlar": [
+        {
+            "Ad": "BURAK CEYLAN",
+            "Tel": "",
+            "Yas": 25,
+            "Boy": 170,
+            "Olcumler": [
+                {
+                    "Tarih": "2025-11-19",
+                    "Kilo": 0.0,
+                    "Bel": 0.0,
+                    "Kalca": 0.0
+                }
+            ]
+        }
+    ],
+    "randevular": [],
+    "odemeler": [],
+    "hazir_listeler": {}
+}
