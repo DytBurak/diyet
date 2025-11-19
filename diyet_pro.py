@@ -9,7 +9,7 @@ from datetime import date, datetime
 # ==========================================
 # 1. AYARLAR & DİL
 # ==========================================
-st.set_page_config(page_title="DiyetTakibim Pro Ultimate", layout="wide", page_icon="💎")
+st.set_page_config(page_title="DiyetTakibim Pro MAX", layout="wide", page_icon="💎")
 
 st.markdown("""
     <script>document.documentElement.setAttribute('lang', 'tr');</script>
@@ -54,6 +54,7 @@ st.markdown("""
 # 3. YARDIMCI FONKSİYONLAR
 # ==========================================
 def calculate_exchange_ui(prefix):
+    """Değişim Hesaplama Arayüzü"""
     vals = {
         "Süt(Tam)": [9,6,6,114,100,370,230,24], "Süt(Yarım)": [9,6,3,87,100,370,230,12],
         "Et(Orta)": [0,6,5,69,65,100,150,20], "Ekmek/Tahıl": [15,2,0,68,150,30,30,0],
@@ -77,6 +78,7 @@ def calculate_exchange_ui(prefix):
         st.markdown(f'<div class="dashboard-card" style="text-align:center;"><h3 style="color:#6c5ce7">{int(totals["Kal"])} kcal</h3><p>K: {int(totals["Karb"])} | P: {int(totals["Prot"])} | Y: {int(totals["Yağ"])}</p></div>', unsafe_allow_html=True)
         if totals['Kal']>0:
             fig = px.pie(values=[totals['Karb']*4, totals['Prot']*4, totals['Yağ']*9], names=["Karb","Prot","Yağ"], hole=0.5, template="plotly_dark", color_discrete_sequence=['#3498db', '#e74c3c', '#f1c40f'])
+            fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value:.0f} kcal')
             st.plotly_chart(fig, use_container_width=True)
     with c_res2:
         st.markdown('<div class="dashboard-card"><h4>Mikro Besinler</h4>', unsafe_allow_html=True)
@@ -86,17 +88,17 @@ def calculate_exchange_ui(prefix):
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# 4. VERİTABANI (JSON) - VERİLER BURADA SAKLANIYOR
+# 4. VERİTABANI (JSON)
 # ==========================================
-DB_FILE = "klinik_data_final.json"
+DB_FILE = "klinik_data_max.json"
 
 def load_db():
     default_templates = {
-        "🛡️ DASH Diyeti (1600 kcal)": "SABAH:\n- 1 Haşlanmış Yumurta\n- 1 Dilim Peynir\n- 5 Zeytin\n- 2 Dilim TB Ekmek\n\nÖĞLE:\n- Izgara Tavuk\n- Salata\n- Yoğurt\n\nAKŞAM:\n- Sebze Yemeği\n- Çorba",
+        "🛡️ DASH Diyeti (1600 kcal)": "SABAH:\n- 1 Haşlanmış Yumurta\n- 1 Dilim Peynir\n- 5 Zeytin (tuzsuz)\n- 2 Dilim TB Ekmek\n\nÖĞLE:\n- Izgara Tavuk\n- Salata\n- Yoğurt\n\nAKŞAM:\n- Sebze Yemeği\n- Çorba",
         "🫀 TLC Diyeti (Kolesterol)": "SABAH:\n- Yulaf Lapası\n- Ceviz\n- Elma\n\nÖĞLE:\n- Kurubaklagil\n- Bulgur\n- Salata\n\nAKŞAM:\n- Izgara Balık\n- Buharda Sebze",
         "🩸 Böbrek Koruma (Düşük K/P)": "SABAH:\n- Yumurta Beyazı\n- Bal\n- Tuzsuz Ekmek\n\nÖĞLE:\n- Pirinç Pilavı\n- Sebze (Süzülmüş)\n\nAKŞAM:\n- Az Tavuk\n- Salata",
         "📉 Kilo Verme (1500 kcal)": "SABAH:\n- 1 Yumurta + Peynir\n- Yeşillik + 2 TB Ekmek\n\nARA:\n- Meyve + Badem\n\nÖĞLE:\n- 8 Kaşık Sebze\n- 1 Yoğurt + 1 Ekmek\n\nARA:\n- 1 Galeta + Ayran\n\nAKŞAM:\n- 120g Köfte\n- Salata",
-        "🍞 Glutensiz Diyet": "SABAH:\n- Glutensiz Ekmek\n- Peynir\n\nÖĞLE:\n- Karabuğday\n- Sebze\n\nAKŞAM:\n- Balık\n- Patates",
+        "🍞 Glutensiz Diyet": "SABAH:\n- Glutensiz Ekmek\n- Peynir, Zeytin\n\nÖĞLE:\n- Karabuğday\n- Sebze\n\nAKŞAM:\n- Balık\n- Patates",
         "🥑 Ketojenik Diyet": "SABAH:\n- Tereyağlı Omlet\n- Avokado\n\nÖĞLE:\n- Somon\n- Kuşkonmaz\n\nAKŞAM:\n- Bonfile\n- Zeytinyağlı Salata",
         "🌱 Düşük FODMAP": "SABAH:\n- Glutensiz Yulaf\n- Laktozsuz Süt\n\nÖĞLE:\n- Tavuklu Pirinç\n\nAKŞAM:\n- Balık\n- Patates"
     }
@@ -116,7 +118,7 @@ def save_db(data):
 db = load_db()
 
 # ==========================================
-# 5. SABİT VERİLER (AUTO DB + EGZERSİZ)
+# 5. SABİT VERİLER (FULL DETAY)
 # ==========================================
 @st.cache_data
 def get_static_data():
@@ -126,8 +128,8 @@ def get_static_data():
         "Protein": [13, 18, 31, 20, 17, 11, 3.5, 3.3, 10, 13, 2.5, 5, 0.3, 1.1, 15, 21, 6, 8, 4]
     })
     
-    # EGZERSİZ LİSTESİ (DEĞİŞKEN ADI DÜZELTİLDİ)
-    egzersizler = {
+    # YAZILI DETAYLI EGZERSİZLER
+    exercises = {
         "💪 Kol (Biceps/Triceps)": [
             {"name": "Dumbbell Bicep Curl", "desc": "Ayakta, avuç içleri karşıya bakacak şekilde dambılları kaldırın.", "set": "3x12"},
             {"name": "Hammer Curl", "desc": "Avuç içleri birbirine bakacak şekilde (Çekiç tutuş) dambılları kaldırın.", "set": "3x12"},
@@ -157,54 +159,60 @@ def get_static_data():
             {"name": "Plank", "desc": "Dirsekler üzerinde vücudu düz tutarak bekleyin.", "set": "3x45 sn"}
         ]
     }
-
-    # AUTO DIET DB
+    
+    # DİYET MOTORU İÇİN DETAYLI (GRAMAJLI) VERİTABANI
     auto_db = {
         "kahvalti": [
-            {"name": "Klasik: 1 Haşlanmış Yumurta + 1 Dilim Peynir", "cal": 200, "p": 15, "c": 2, "f": 14, "tag": "std"},
-            {"name": "Menemen (2 Yumurtalı, Az Yağlı)", "cal": 250, "p": 14, "c": 10, "f": 16, "tag": "std"},
-            {"name": "Lor Peynirli Omlet", "cal": 220, "p": 20, "c": 3, "f": 12, "tag": "high_pro"},
-            {"name": "Yulaf Lapası + Süt", "cal": 250, "p": 10, "c": 35, "f": 6, "tag": "veg"}
+            {"name": "Klasik: 1 Haşlanmış Yumurta + 1 Dilim (30g) Beyaz Peynir + 5 Zeytin", "cal": 250, "p": 16, "c": 3, "f": 18, "tag": "std"},
+            {"name": "Menemen (2 Yumurtalı, Az Yağlı, Domatesli)", "cal": 280, "p": 14, "c": 10, "f": 18, "tag": "std"},
+            {"name": "Lor Peynirli Omlet (2 Yumurta + 3 Kaşık Lor + Maydanoz)", "cal": 240, "p": 22, "c": 4, "f": 13, "tag": "high_pro"},
+            {"name": "Yulaf Lapası (4 Kaşık Yulaf + 1 Su Bardağı Süt + Tarçın)", "cal": 300, "p": 12, "c": 45, "f": 7, "tag": "veg"},
+            {"name": "Avokadolu Tost (1/2 Avokado + 2 Dilim Peynir)", "cal": 350, "p": 10, "c": 25, "f": 20, "tag": "veg"}
         ],
         "ekmek": [
-            {"name": "2 Dilim Tam Buğday Ekmek", "cal": 140, "p": 6, "c": 26, "f": 2},
-            {"name": "1 Dilim Çavdar Ekmek", "cal": 70, "p": 3, "c": 13, "f": 1}
+            {"name": "2 Dilim Tam Buğday Ekmek (50g)", "cal": 140, "p": 6, "c": 26, "f": 2},
+            {"name": "1 Dilim Çavdar Ekmek (30g)", "cal": 70, "p": 3, "c": 13, "f": 1},
+            {"name": "1/2 Simit (50g)", "cal": 140, "p": 4, "c": 25, "f": 3}
         ],
         "ana_yemek": [
-            {"name": "Izgara Köfte (120g)", "cal": 300, "p": 22, "c": 5, "f": 20, "tag": "std"},
-            {"name": "Izgara Tavuk Göğsü (150g)", "cal": 165, "p": 31, "c": 0, "f": 3.6, "tag": "high_pro"},
-            {"name": "Fırın Somon (150g)", "cal": 300, "p": 30, "c": 0, "f": 18, "tag": "high_pro"},
-            {"name": "Kuru Fasulye (Etsiz)", "cal": 200, "p": 12, "c": 30, "f": 2, "tag": "veg"},
-            {"name": "Yeşil Mercimek Yemeği", "cal": 180, "p": 14, "c": 28, "f": 1, "tag": "veg"},
-            {"name": "Etli Sebze Yemeği", "cal": 250, "p": 15, "c": 10, "f": 15, "tag": "std"}
+            {"name": "Izgara Köfte (150g - 5 Adet) + Köz Biber", "cal": 350, "p": 28, "c": 6, "f": 22, "tag": "std"},
+            {"name": "Izgara Tavuk Göğsü (180g - Baharatlı)", "cal": 200, "p": 38, "c": 0, "f": 4, "tag": "high_pro"},
+            {"name": "Fırın Somon (180g) + Roka", "cal": 350, "p": 35, "c": 0, "f": 20, "tag": "high_pro"},
+            {"name": "Kuru Fasulye (Etsiz - 8 Yemek Kaşığı)", "cal": 250, "p": 14, "c": 35, "f": 3, "tag": "veg"},
+            {"name": "Yeşil Mercimek Yemeği (8 Yemek Kaşığı)", "cal": 220, "p": 16, "c": 30, "f": 2, "tag": "veg"},
+            {"name": "Kıymalı Sebze Yemeği (6 Yemek Kaşığı)", "cal": 280, "p": 18, "c": 12, "f": 16, "tag": "std"}
         ],
         "yan_yemek": [
-            {"name": "Bulgur Pilavı (4 Kaşık)", "cal": 110, "p": 3, "c": 22, "f": 1},
-            {"name": "Kepekli Makarna (4 Kaşık)", "cal": 120, "p": 4, "c": 25, "f": 1},
-            {"name": "Mercimek Çorbası", "cal": 70, "p": 4, "c": 10, "f": 2},
-            {"name": "Yoğurt (1 Kase)", "cal": 100, "p": 6, "c": 8, "f": 5},
-            {"name": "Ayran", "cal": 80, "p": 4, "c": 6, "f": 4}
+            {"name": "Bulgur Pilavı (4 Yemek Kaşığı)", "cal": 110, "p": 3, "c": 22, "f": 1},
+            {"name": "Kepekli Makarna (5 Yemek Kaşığı)", "cal": 150, "p": 5, "c": 30, "f": 1},
+            {"name": "Mercimek Çorbası (1 Kepçe)", "cal": 70, "p": 4, "c": 10, "f": 2},
+            {"name": "Yoğurt (1 Kase - Ev Yapımı)", "cal": 100, "p": 6, "c": 8, "f": 5},
+            {"name": "Ayran (1 Büyük Bardak)", "cal": 80, "p": 4, "c": 6, "f": 4},
+            {"name": "Cacık (1 Kase - Salatalıklı)", "cal": 90, "p": 5, "c": 7, "f": 4}
         ],
         "ara": [
-            {"name": "1 Elma + 2 Ceviz", "cal": 100, "p": 1, "c": 15, "f": 5},
-            {"name": "1 Muz + 10 Badem", "cal": 150, "p": 3, "c": 20, "f": 8},
-            {"name": "1 Kuru İncir + Süt", "cal": 150, "p": 6, "c": 20, "f": 5}
+            {"name": "1 Orta Boy Elma + 2 Tam Ceviz", "cal": 150, "p": 2, "c": 15, "f": 10},
+            {"name": "1 Küçük Muz + 10 Çiğ Badem", "cal": 160, "p": 4, "c": 20, "f": 9},
+            {"name": "1 Kuru İncir + 1 Su Bardağı Süt", "cal": 180, "p": 7, "c": 25, "f": 6},
+            {"name": "2 Grissini + 1 Bardak Ayran", "cal": 130, "p": 5, "c": 18, "f": 4}
         ]
     }
     
-    return foods, egzersizler, auto_db
+    return foods, exercises, auto_db
 
-df_foods, egzersizler, auto_db = get_static_data()
+df_foods, exercises, auto_db = get_static_data()
 
 # ==========================================
 # 6. NAVİGASYON
 # ==========================================
 with st.sidebar:
     st.title("💎 DiyetTakibim")
-    st.caption("Ultimate v26.0 (Fixed)")
+    st.caption("Ultimate v30.0 (Max)")
     menu = st.radio("MENÜ", [
         "🏠 Ana Sayfa",
         "👥 Danışan Yönetimi",
+        "📅 Randevu Takvimi",
+        "💰 Muhasebe & Kasa",
         "🧮 Yetişkin Planlama",
         "👶 Çocuk Planlama",
         "🤖 Otomatik Diyet Motoru",
@@ -219,105 +227,219 @@ with st.sidebar:
 if menu == "🏠 Ana Sayfa":
     st.markdown(f"""
     <div class="dashboard-card" style="border-left: 5px solid #6c5ce7;">
-        <h2>👋 Hoşgeldin Hocam!</h2>
-        <p>Tüm modüller aktif. Veriler güvende.</p>
+        <h2>👋 Hoşgeldin, Hocam!</h2>
+        <p>Sistemin tüm modülleri tam kapasite çalışıyor. Lab Analizi, Çocuk Grafikleri ve Diyet Motoru detaylandırıldı.</p>
     </div>
     """, unsafe_allow_html=True)
     
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Danışan", len(db['danisanlar']))
-    c2.metric("Randevu", len(db['randevular']))
-    c3.metric("Kasa", f"{sum(o['Tutar'] for o in db['odemeler']):,.0f} ₺")
-    c4.metric("Şablonlar", len(db['manuel_listeler']))
+    c1.metric("Toplam Danışan", len(db['danisanlar']))
+    c2.metric("Randevular", len(db['randevular']))
+    c3.metric("Toplam Kasa", f"{sum(o['Tutar'] for o in db['odemeler']):,.0f} ₺")
+    c4.metric("Hazır Şablon", len(db['manuel_listeler']))
+    
+    st.markdown('<div class="dashboard-card"><h3>📊 Haftalık Özet</h3>', unsafe_allow_html=True)
+    # Gerçek veriden grafik (Varsa)
+    if db['randevular']:
+        df_r = pd.DataFrame(db['randevular'])
+        df_r['Tarih'] = pd.to_datetime(df_r['Tarih'])
+        df_count = df_r.groupby('Tarih').size().reset_index(name='Randevu Sayısı')
+        fig = px.bar(df_count, x='Tarih', y='Randevu Sayısı', template="plotly_dark", color_discrete_sequence=['#6c5ce7'])
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Grafik için randevu ekleyiniz.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# MODÜL 2: DANIŞAN YÖNETİMİ
+# MODÜL 2: DANIŞAN YÖNETİMİ (FULL)
 # ==========================================
 elif menu == "👥 Danışan Yönetimi":
-    tab1, tab2 = st.tabs(["➕ Detaylı Kayıt", "📋 Hasta Takibi"])
+    st.header("👥 Danışan Yönetimi")
+    tab1, tab2 = st.tabs(["➕ Yeni Kayıt", "📋 Hasta Takibi"])
+    
     with tab1:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
-        with st.form("kayit"):
-            st.subheader("1. Kimlik")
+        with st.form("kayit_form"):
+            st.subheader("1. Kimlik Bilgileri")
             c1, c2 = st.columns(2)
             ad = c1.text_input("Ad Soyad")
             tel = c2.text_input("Telefon")
-            yas = c1.number_input("Yaş", 1, 100, 30)
+            yas = c1.number_input("Yaş", 1, 100, 25)
             boy = c2.number_input("Boy (cm)", 50, 250, 170)
-            st.subheader("2. Ölçümler")
+            
+            st.subheader("2. Antropometrik Ölçümler")
             o1, o2, o3 = st.columns(3)
             kilo = o1.number_input("Kilo (kg)", 0.0, 300.0, 70.0)
-            bel = o2.number_input("Bel", 0.0); kalca = o3.number_input("Kalça", 0.0)
-            boyun = o1.number_input("Boyun", 0.0); baldir = o2.number_input("Baldır", 0.0)
-            st.subheader("3. Anamnez")
-            sevdigi = st.text_area("Sevdiği")
+            bel = o2.number_input("Bel (cm)", 0.0)
+            kalca = o3.number_input("Kalça (cm)", 0.0)
+            boyun = o1.number_input("Boyun (cm)", 0.0)
+            baldir = o2.number_input("Baldır (cm)", 0.0)
+            
+            st.subheader("3. Beslenme Anamnezi")
+            sevdigi = st.text_area("Sevdiği Yemekler")
             sevmedigi = st.text_area("Sevmediği / Alerji")
-            hastalik = st.text_area("Hastalık / İlaç")
-            if st.form_submit_button("Kaydet"):
-                yeni = {"Ad": ad, "Tel": tel, "Yas": yas, "Boy": boy, "Anamnez": {"Sevdigi": sevdigi, "Sevmedigi": sevmedigi, "Hastalik": hastalik}, "Olcumler": [{"Tarih": str(date.today()), "Kilo": kilo, "Bel": bel, "Kalca": kalca}]}
+            hastalik = st.text_area("Tanılı Hastalıklar / İlaçlar")
+            
+            if st.form_submit_button("Danışanı Kaydet"):
+                yeni = {
+                    "Ad": ad, "Tel": tel, "Yas": yas, "Boy": boy, 
+                    "Anamnez": {"Sevdigi": sevdigi, "Sevmedigi": sevmedigi, "Hastalik": hastalik},
+                    "Olcumler": [{"Tarih": str(date.today()), "Kilo": kilo, "Bel": bel, "Kalca": kalca, "Boyun": boyun, "Baldir": baldir}]
+                }
                 db['danisanlar'].append(yeni)
-                save_db(db); st.success("Kaydedildi!")
+                save_db(db)
+                st.success("✅ Danışan başarıyla kaydedildi!")
         st.markdown('</div>', unsafe_allow_html=True)
+
     with tab2:
         if db['danisanlar']:
             isim = st.selectbox("Danışan Seç", [d['Ad'] for d in db['danisanlar']])
             kisi = next(d for d in db['danisanlar'] if d['Ad'] == isim)
             idx = db['danisanlar'].index(kisi)
+            
             c_detay, c_graf = st.columns([1, 2])
             with c_detay:
-                st.markdown(f"""<div class="dashboard-card"><h3>{kisi['Ad']}</h3><p>Tel: {kisi['Tel']}</p><hr><p><b>Hastalık:</b> {kisi.get('Anamnez',{}).get('Hastalik','-')}</p></div>""", unsafe_allow_html=True)
-                with st.expander("Yeni Ölçüm"):
+                st.markdown(f"""
+                <div class="dashboard-card">
+                    <h3>👤 {kisi['Ad']}</h3>
+                    <p>📞 {kisi['Tel']}</p>
+                    <p>📏 Boy: {kisi['Boy']} cm | Yaş: {kisi['Yas']}</p>
+                    <hr>
+                    <p><b>💊 Hastalık/İlaç:</b> {kisi.get('Anamnez', {}).get('Hastalik', '-')}</p>
+                    <p><b>❤️ Sevdiği:</b> {kisi.get('Anamnez', {}).get('Sevdigi', '-')}</p>
+                    <p><b>🚫 Sevmediği:</b> {kisi.get('Anamnez', {}).get('Sevmedigi', '-')}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                with st.expander("➕ Yeni Ölçüm Ekle"):
                     nk = st.number_input("Yeni Kilo", 0.0)
+                    nb = st.number_input("Bel", 0.0)
                     if st.button("Güncelle"):
-                        kisi['Olcumler'].append({"Tarih": str(date.today()), "Kilo": nk})
-                        db['danisanlar'][idx] = kisi; save_db(db); st.success("Eklendi")
+                        kisi['Olcumler'].append({"Tarih": str(date.today()), "Kilo": nk, "Bel": nb})
+                        db['danisanlar'][idx] = kisi
+                        save_db(db)
+                        st.success("Ölçüm eklendi!")
+            
             with c_graf:
                 if kisi['Olcumler']:
                     df_o = pd.DataFrame(kisi['Olcumler'])
-                    fig = px.line(df_o, x="Tarih", y="Kilo", markers=True, template="plotly_dark", title="Kilo Takibi")
+                    st.markdown("### 📉 Gelişim Grafiği")
+                    fig = px.line(df_o, x="Tarih", y="Kilo", markers=True, template="plotly_dark", title="Kilo Değişimi")
                     st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("Henüz kayıtlı danışan yok.")
 
 # ==========================================
-# MODÜL 3: YETİŞKİN PLANLAMA
+# MODÜL 3: RANDEVU TAKVİMİ
+# ==========================================
+elif menu == "📅 Randevu Takvimi":
+    st.header("📅 Randevu Yönetimi")
+    
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        st.markdown('<div class="dashboard-card"><h3>➕ Randevu Ekle</h3>', unsafe_allow_html=True)
+        with st.form("randevu_ver"):
+            who = st.selectbox("Danışan", [d['Ad'] for d in db['danisanlar']]) if db['danisanlar'] else st.text_input("İsim Girin")
+            when = st.date_input("Tarih")
+            time = st.time_input("Saat")
+            note = st.text_input("Not")
+            if st.form_submit_button("Randevu Oluştur"):
+                db['randevular'].append({"Danışan": who, "Tarih": str(when), "Saat": str(time), "Not": note})
+                save_db(db)
+                st.success("Randevu takvime işlendi.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with c2:
+        st.subheader("📆 Gelecek Randevular")
+        if db['randevular']:
+            df_r = pd.DataFrame(db['randevular']).sort_values("Tarih")
+            st.dataframe(df_r, use_container_width=True)
+        else:
+            st.info("Randevu bulunamadı.")
+
+# ==========================================
+# MODÜL 4: MUHASEBE & KASA
+# ==========================================
+elif menu == "💰 Muhasebe & Kasa":
+    st.header("💰 Finansal Takip")
+    
+    c1, c2 = st.columns([1, 2])
+    with c1:
+        st.markdown('<div class="dashboard-card"><h3>💵 Ödeme Al</h3>', unsafe_allow_html=True)
+        with st.form("odeme_al"):
+            who = st.text_input("Ödeyen Kişi")
+            amt = st.number_input("Tutar (TL)", 0.0, step=100.0)
+            desc = st.text_input("Hizmet Açıklaması")
+            if st.form_submit_button("Kaydet"):
+                db['odemeler'].append({"Tarih": str(date.today()), "Danışan": who, "Tutar": amt, "Aciklama": desc})
+                save_db(db)
+                st.success("Kasa güncellendi.")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+    with c2:
+        if db['odemeler']:
+            total = sum(o['Tutar'] for o in db['odemeler'])
+            st.markdown(f"""
+            <div class="dashboard-card" style="text-align:center; border-left: 5px solid #27ae60;">
+                <h3>Toplam Ciro</h3>
+                <h1 style="color:#27ae60;">{total:,.0f} ₺</h1>
+            </div>
+            """, unsafe_allow_html=True)
+            st.dataframe(pd.DataFrame(db['odemeler']), use_container_width=True)
+
+# ==========================================
+# MODÜL 5: YETİŞKİN PLANLAMA
 # ==========================================
 elif menu == "🧮 Yetişkin Planlama":
-    st.header("👨 Yetişkin Hesaplama")
-    with st.expander("1. Enerji Hesabı (Mifflin)", expanded=True):
+    st.header("👨 Yetişkin Hesaplama & Planlama")
+    
+    with st.expander("1. Enerji Hesabı (Mifflin-St Jeor)", expanded=True):
         c1, c2, c3, c4 = st.columns(4)
-        yk = c1.number_input("Kilo", 70.0); yb = c2.number_input("Boy", 170); yy = c3.number_input("Yaş", 30); yc = c4.selectbox("Cinsiyet", ["Erkek", "Kadın"])
-        pal = st.select_slider("Aktivite", ["Sedanter (1.2)", "Hafif (1.3)", "Orta (1.5)", "Aktif (1.7)"])
+        yk = c1.number_input("Kilo (kg)", 70.0)
+        yb = c2.number_input("Boy (cm)", 170)
+        yy = c3.number_input("Yaş", 30)
+        yc = c4.selectbox("Cinsiyet", ["Erkek", "Kadın"])
+        pal = st.select_slider("Aktivite", ["Sedanter (1.2)", "Hafif (1.375)", "Orta (1.55)", "Aktif (1.725)"])
         pal_val = float(pal.split("(")[1].replace(")", ""))
+        
         s = 5 if yc == "Erkek" else -161
-        bmh = (10*yk) + (6.25*yb) - (5*yy) + s
+        bmh = (10 * yk) + (6.25 * yb) - (5 * yy) + s
         teh = bmh * pal_val
         bki = yk / ((yb/100)**2)
+        
         ic1, ic2, ic3 = st.columns(3)
         ic1.markdown(f'<div class="info-box"><h3>BKİ: {bki:.1f}</h3></div>', unsafe_allow_html=True)
         ic2.markdown(f'<div class="info-box"><h3>BMH: {int(bmh)} kcal</h3></div>', unsafe_allow_html=True)
         ic3.markdown(f'<div class="info-box"><h3>TEH: {int(teh)} kcal</h3></div>', unsafe_allow_html=True)
+
+    # Değişim Hesaplama
     st.subheader("2. Değişim Planlama")
     calculate_exchange_ui("adult")
 
 # ==========================================
-# MODÜL 4: ÇOCUK PLANLAMA
+# MODÜL 6: ÇOCUK PLANLAMA
 # ==========================================
 elif menu == "👶 Çocuk Planlama":
-    st.header("👶 Çocuk Hesaplama")
+    st.header("👶 Çocuk Hesaplama & Planlama")
+    
     with st.expander("1. Gelişim & Enerji (Schofield)", expanded=True):
         c1, c2, c3 = st.columns(3)
         cy = c1.number_input("Yaş", 1, 18, 7)
         ck = c2.number_input("Kilo", 20.0)
         cc = c3.selectbox("Cinsiyet ", ["Erkek", "Kız"])
+        
         c_bmh = 0
         if cy <= 3: c_bmh = (60.9 * ck) - 54 if cc == "Erkek" else (61 * ck) - 51
         elif 3 < cy <= 10: c_bmh = (22.7 * ck) + 495 if cc == "Erkek" else (22.5 * ck) + 499
         else: c_bmh = (17.5 * ck) + 651 if cc == "Erkek" else (12.2 * ck) + 746
+        
         st.markdown(f'<div class="info-box"><h3>Hedef Enerji: {int(c_bmh)} kcal</h3><p>(Bazal Metabolizma)</p></div>', unsafe_allow_html=True)
+    
     st.subheader("2. Değişim Planlama")
     calculate_exchange_ui("child")
 
 # ==========================================
-# MODÜL 5: OTOMATİK DİYET MOTORU
+# MODÜL 7: OTOMATİK DİYET MOTORU (GELİŞMİŞ)
 # ==========================================
 elif menu == "🤖 Otomatik Diyet Motoru":
     st.header("🤖 Akıllı Menü Oluşturucu")
@@ -327,11 +449,11 @@ elif menu == "🤖 Otomatik Diyet Motoru":
     with c_in:
         st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
         st.subheader("⚙️ Ayarlar")
-        target = st.number_input("Hedef Kalori", 1200, 4000, 1800, step=100)
+        target = st.number_input("Hedef Kalori (kcal)", 1200, 4000, 1800, step=100)
         pref = st.radio("Tercih", ["Standart", "Vejetaryen", "Yüksek Protein"])
         
         if st.button("✨ Menüyü Oluştur"):
-            # FİLTRELEME
+            # FİLTRELEME MANTIĞI
             f_ana = auto_db["ana_yemek"]
             f_kah = auto_db["kahvalti"]
             
@@ -341,7 +463,7 @@ elif menu == "🤖 Otomatik Diyet Motoru":
             elif pref == "Yüksek Protein":
                 f_ana = [x for x in auto_db["ana_yemek"] if x.get("tag") in ["high_pro", "std"]]
                 
-            if not f_ana: f_ana = auto_db["ana_yemek"] 
+            if not f_ana: f_ana = auto_db["ana_yemek"] # Fallback
             
             daily_menu = {"Sabah": [], "Öğle": [], "Ara": [], "Akşam": []}
             total_stats = {"cal": 0, "p": 0, "c": 0, "f": 0}
@@ -372,11 +494,13 @@ elif menu == "🤖 Otomatik Diyet Motoru":
 
     with c_out:
         if 'generated_menu' in st.session_state:
+            menu_data = st.session_state['generated_menu']
             stats = st.session_state['generated_stats']
+            
             st.markdown(f"""
             <div class="dashboard-card" style="text-align:center; border-left:5px solid #27ae60;">
                 <h2>🔥 {int(stats['cal'])} kcal</h2>
-                <div style="display:flex; justify-content:space-around;">
+                <div style="display:flex; justify-content:space-around; margin-top:10px;">
                     <span>🥩 P: {int(stats['p'])}g</span><span>🍞 K: {int(stats['c'])}g</span><span>🥑 Y: {int(stats['f'])}g</span>
                 </div>
             </div>
@@ -384,7 +508,7 @@ elif menu == "🤖 Otomatik Diyet Motoru":
             
             c_list, c_pie = st.columns([3, 2])
             with c_list:
-                for meal, items in st.session_state['generated_menu'].items():
+                for meal, items in menu_data.items():
                     st.markdown(f"**{meal.upper()}**")
                     for item in items:
                         st.markdown(f"- {item['name']} *({item['cal']} kcal)*")
@@ -393,6 +517,7 @@ elif menu == "🤖 Otomatik Diyet Motoru":
             with c_pie:
                 df_pie = pd.DataFrame({'Makro': ['Protein', 'Karbonhidrat', 'Yağ'], 'Kalori': [stats['p']*4, stats['c']*4, stats['f']*9]})
                 fig = px.pie(df_pie, values='Kalori', names='Makro', hole=0.4, template="plotly_dark", color_discrete_sequence=['#e74c3c', '#3498db', '#f1c40f'])
+                fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value:.0f} kcal')
                 st.plotly_chart(fig, use_container_width=True)
                 
                 st.download_button("📄 İndir (TXT)", st.session_state['text_list'], file_name=f"Diyet_{date.today()}.txt")
@@ -403,10 +528,11 @@ elif menu == "🤖 Otomatik Diyet Motoru":
                     save_db(db); st.success("Kaydedildi!")
 
 # ==========================================
-# MODÜL 6: LAB ANALİZİ
+# MODÜL 8: LAB ANALİZİ (FULL 5 SEKME)
 # ==========================================
 elif menu == "🩸 Lab Analizi":
     st.header("🩸 Kapsamlı Laboratuvar Analizi")
+    
     def check(l, v, min_v, max_v, u, lo, hi):
         if v > 0:
             if v < min_v: st.error(f"📉 {l} DÜŞÜK ({v} {u})"); st.info(f"💡 {lo}")
@@ -416,32 +542,32 @@ elif menu == "🩸 Lab Analizi":
     t1, t2, t3, t4, t5 = st.tabs(["Hemogram", "Biyokimya", "Hormon", "Lipid", "Elektrolit"])
     with t1:
         c1, c2 = st.columns(2)
-        check("WBC", c1.number_input("WBC", 0.0), 4, 10, "K/uL", "Bağışıklık düşük.", "Enfeksiyon riski.")
-        check("HGB", c2.number_input("HGB", 0.0), 12, 16, "g/dL", "Demir eksikliği.", "Sıvı alımını artır.")
-        check("CRP", c1.number_input("CRP", 0.0), 0, 5, "mg/L", "", "Vücutta enfeksiyon/yangı.")
+        check("WBC", c1.number_input("WBC", 0.0), 4, 10, "K/uL", "Bağışıklık düşük. C Vit desteği.", "Enfeksiyon riski. Doktora danış.")
+        check("HGB", c2.number_input("HGB", 0.0), 12, 16, "g/dL", "Demir eksikliği anemisi. Kırmızı et, pekmez.", "Dehidratasyon belirtisi olabilir.")
+        check("CRP", c1.number_input("CRP", 0.0), 0, 5, "mg/L", "", "Vücutta enfeksiyon/yangı mevcut.")
     with t2:
         c1, c2 = st.columns(2)
-        check("Açlık Şekeri", c1.number_input("Glikoz", 0.0), 70, 100, "mg/dL", "Hipoglisemi.", "Diyabet riski.")
-        check("Kreatinin", c2.number_input("Kreatinin", 0.0), 0.6, 1.1, "mg/dL", "Kas erimesi.", "Böbrek yükü.")
-        check("AST", c1.number_input("AST", 0.0), 0, 35, "U/L", "", "Karaciğer hasarı.")
-        check("ALT", c2.number_input("ALT", 0.0), 0, 35, "U/L", "", "Karaciğer yağlanması.")
+        check("Açlık Şekeri", c1.number_input("Glikoz", 0.0), 70, 100, "mg/dL", "Hipoglisemi riski. Ara öğün ekle.", "Diyabet riski. Karbonhidrat sayımı yap.")
+        check("Kreatinin", c2.number_input("Kreatinin", 0.0), 0.6, 1.1, "mg/dL", "Kas erimesi olabilir.", "Böbrek yükü. Proteini kısıtla.")
+        check("AST", c1.number_input("AST", 0.0), 0, 35, "U/L", "", "Karaciğer hasarı riski.")
+        check("ALT", c2.number_input("ALT", 0.0), 0, 35, "U/L", "", "Karaciğer yağlanması. Alkolü kes.")
     with t3:
         c1, c2 = st.columns(2)
-        check("TSH", c1.number_input("TSH", 0.0), 0.4, 4.0, "mU/L", "Hipertiroidi.", "Hipotiroidi.")
-        check("B12", c2.number_input("B12", 0.0), 200, 900, "pg/mL", "Eksiklik.", "")
-        check("D Vit", c1.number_input("D Vit", 0.0), 30, 100, "ng/mL", "Takviye al.", "Toksik.")
+        check("TSH", c1.number_input("TSH", 0.0), 0.4, 4.0, "mU/L", "Hipertiroidi (Hızlı met.).", "Hipotiroidi (Yavaş met.). İyot al.")
+        check("B12", c2.number_input("B12", 0.0), 200, 900, "pg/mL", "Eksiklik. Unutkanlık yapar. Yumurta ye.", "")
+        check("D Vit", c1.number_input("D Vit", 0.0), 30, 100, "ng/mL", "Takviye al. Kemik ağrısı yapar.", "Toksik seviye.")
     with t4:
         c1, c2 = st.columns(2)
-        check("LDL", c1.number_input("LDL", 0.0), 0, 130, "mg/dL", "", "Riskli.")
-        check("Trigliserid", c2.number_input("Trigliserid", 0.0), 0, 150, "mg/dL", "", "Şekeri kes.")
+        check("LDL", c1.number_input("LDL", 0.0), 0, 130, "mg/dL", "", "Riskli. Doymuş yağı azalt.")
+        check("Trigliserid", c2.number_input("Trigliserid", 0.0), 0, 150, "mg/dL", "", "Şekeri ve alkolü acil kes.")
     with t5:
         c1, c2 = st.columns(2)
-        check("Sodyum", c1.number_input("Na", 0.0), 135, 145, "mEq/L", "Hiponatremi.", "Hipernatremi.")
-        check("Potasyum", c2.number_input("K", 0.0), 3.5, 5.1, "mEq/L", "Hipokalemi.", "Hiperkalemi.")
-        check("Kalsiyum", c1.number_input("Ca", 0.0), 8.5, 10.5, "mg/dL", "Kemik erimesi.", "Hiperkalsemi.")
+        check("Sodyum", c1.number_input("Na", 0.0), 135, 145, "mEq/L", "Hiponatremi.", "Hipernatremi. Tuzu azalt.")
+        check("Potasyum", c2.number_input("K", 0.0), 3.5, 5.1, "mEq/L", "Hipokalemi (Kalp riski). Muz, patates ye.", "Hiperkalemi. Böbrek riski.")
+        check("Kalsiyum", c1.number_input("Ca", 0.0), 8.5, 10.5, "mg/dL", "Kemik erimesi riski.", "Hiperkalsemi.")
 
 # ==========================================
-# MODÜL 7: DİYET & HAZIR LİSTELER
+# MODÜL 9: DİYET & HAZIR LİSTELER
 # ==========================================
 elif menu == "🍏 Diyet & Hazır Listeler":
     st.header("🍏 Diyet Planla & Yönet")
@@ -452,6 +578,7 @@ elif menu == "🍏 Diyet & Hazır Listeler":
         templates = db.get('manuel_listeler', {})
         secilen = st.selectbox("Şablon Seç", list(templates.keys()))
         icerik = st.text_area("İçerik (Düzenle)", value=templates[secilen], height=400)
+        
         c1, c2 = st.columns(2)
         with c1:
             yeni_ad = st.text_input("Farklı Kaydet İsim")
@@ -475,7 +602,7 @@ elif menu == "🍏 Diyet & Hazır Listeler":
             st.metric("Toplam", f"{df_m['Kal'].sum()} kcal")
 
 # ==========================================
-# MODÜL 8: EGZERSİZ
+# MODÜL 10: EGZERSİZ
 # ==========================================
 elif menu == "🏋️ Egzersiz Kütüphanesi":
     st.header("🏋️ Geniş Egzersiz Kütüphanesi")
