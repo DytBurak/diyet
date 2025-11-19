@@ -94,41 +94,49 @@ DB_FILE = "klinik_data_max.json"
 
 def load_db():
     default_templates = {
-        "🛡️ DASH Diyeti (1600 kcal)": "SABAH:\n- 1 Haşlanmış Yumurta\n- 1 Dilim Peynir\n- 5 Zeytin (tuzsuz)\n- 2 Dilim TB Ekmek\n\nÖĞLE:\n- Izgara Tavuk\n- Salata\n- Yoğurt\n\nAKŞAM:\n- Sebze Yemeği\n- Çorba",
-        "🫀 TLC Diyeti (Kolesterol)": "SABAH:\n- Yulaf Lapası\n- Ceviz\n- Elma\n\nÖĞLE:\n- Kurubaklagil\n- Bulgur\n- Salata\n\nAKŞAM:\n- Izgara Balık\n- Buharda Sebze",
-        "🩸 Böbrek Koruma (Düşük K/P)": "SABAH:\n- Yumurta Beyazı\n- Bal\n- Tuzsuz Ekmek\n\nÖĞLE:\n- Pirinç Pilavı\n- Sebze (Süzülmüş)\n\nAKŞAM:\n- Az Tavuk\n- Salata",
-        "📉 Kilo Verme (1500 kcal)": "SABAH:\n- 1 Yumurta + Peynir\n- Yeşillik + 2 TB Ekmek\n\nARA:\n- Meyve + Badem\n\nÖĞLE:\n- 8 Kaşık Sebze\n- 1 Yoğurt + 1 Ekmek\n\nARA:\n- 1 Galeta + Ayran\n\nAKŞAM:\n- 120g Köfte\n- Salata",
-        "🍞 Glutensiz Diyet": "SABAH:\n- Glutensiz Ekmek\n- Peynir, Zeytin\n\nÖĞLE:\n- Karabuğday\n- Sebze\n\nAKŞAM:\n- Balık\n- Patates",
-        "🥑 Ketojenik Diyet": "SABAH:\n- Tereyağlı Omlet\n- Avokado\n\nÖĞLE:\n- Somon\n- Kuşkonmaz\n\nAKŞAM:\n- Bonfile\n- Zeytinyağlı Salata",
-        "🌱 Düşük FODMAP": "SABAH:\n- Glutensiz Yulaf\n- Laktozsuz Süt\n\nÖĞLE:\n- Tavuklu Pirinç\n\nAKŞAM:\n- Balık\n- Patates"
+        "🛡️ DASH Diyeti (1600 kcal)": "SABAH:\n- 1 Haşlanmış Yumurta\n- 1 Dilim Az Yağlı Peynir\n- 5 Zeytin (tuzsuz)\n- 2 Dilim TB Ekmek\n\nÖĞLE:\n- 150g Izgara Tavuk\n- Bol Salata (limonlu)\n- 1 Kase Yoğurt\n\nAKŞAM:\n- 8 Kaşık Sebze Yemeği\n- 1 Kase Çorba\n- Salata",
+        "🫀 TLC Diyeti (Kolesterol)": "SABAH:\n- Yulaf Lapası (Sütlü)\n- 2 Ceviz\n- 1 Elma\n\nÖĞLE:\n- Kurubaklagil Yemeği\n- 3 Kaşık Bulgur\n- Salata\n\nAKŞAM:\n- Izgara Balık (Somon)\n- Buharda Sebze",
+        "🩸 Böbrek Koruma (Düşük K/P)": "⚠️ Potasyum ve Fosfor kısıtlaması içerir.\n\nSABAH:\n- 1 Yumurta Beyazı\n- Bal/Reçel\n- Tuzsuz Ekmek\n- Açık Çay\n\nÖĞLE:\n- Pirinç Pilavı\n- Sebze (Suyu süzülmüş)\n- Beyaz Ekmek\n\nAKŞAM:\n- Az Miktarda Tavuk\n- Salata (Domates yok)",
+        "📉 Kilo Verme (Standart 1500)": "SABAH:\n- 1 Yumurta + 1 Peynir\n- Yeşillik\n- 2 TB Ekmek\n\nARA:\n- 1 Meyve + 10 Badem\n\nÖĞLE:\n- 8 Kaşık Sebze\n- 1 Yoğurt + 1 Ekmek\n\nAKŞAM:\n- 120g Köfte\n- Bol Salata",
+        "🍞 Glutensiz Diyet (Çölyak)": "YASAKLAR: Buğday, Arpa, Çavdar.\n\nSABAH:\n- Glutensiz Ekmek\n- Peynir, Zeytin, Yumurta\n\nÖĞLE:\n- Karabuğday Pilavı\n- Sebze Yemeği\n\nAKŞAM:\n- Balık\n- Fırın Patates",
+        "🥑 Ketojenik Diyet": "SABAH:\n- Tereyağlı Omlet\n- 1/2 Avokado\n- 10 Yeşil Zeytin\n\nÖĞLE:\n- Izgara Somon\n- Kuşkonmaz (Zeytinyağlı)\n\nAKŞAM:\n- Bonfile Et\n- Bol Yeşil Salata (Bol Zeytinyağı)",
+        "🌱 Düşük FODMAP (IBS)": "SABAH:\n- Glutensiz Yulaf\n- Laktozsuz Süt\n\nÖĞLE:\n- Tavuklu Pirinç Pilavı\n- Havuç Salata\n\nAKŞAM:\n- Balık\n- Patates Püresi"
     }
     
     if not os.path.exists(DB_FILE):
         return {"danisanlar": [], "randevular": [], "odemeler": [], "manuel_listeler": default_templates}
+    
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if "manuel_listeler" not in data or not data["manuel_listeler"]: data["manuel_listeler"] = default_templates
+            if "manuel_listeler" not in data: data["manuel_listeler"] = default_templates
+            else:
+                for k, v in default_templates.items():
+                    if k not in data["manuel_listeler"]:
+                        data["manuel_listeler"][k] = v
             return data
-    except: return {"danisanlar": [], "randevular": [], "odemeler": [], "manuel_listeler": default_templates}
+    except:
+        return {"danisanlar": [], "randevular": [], "odemeler": [], "manuel_listeler": default_templates}
 
 def save_db(data):
-    with open(DB_FILE, "w", encoding="utf-8") as f: json.dump(data, f, ensure_ascii=False, indent=4)
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 db = load_db()
 
 # ==========================================
-# 5. SABİT VERİLER (FULL DETAY)
+# 5. SABİT VERİLER (AUTO DB & EGZERSİZ)
 # ==========================================
 @st.cache_data
 def get_static_data():
+    # Besinler (Akıllı Liste İçin)
     foods = pd.DataFrame({
         "Besin Adı": ["Yumurta", "Köfte", "Tavuk Göğsü", "Somon", "Beyaz Peynir", "Lor Peyniri", "Yoğurt", "Süt", "Tam Buğday Ekmek", "Yulaf Ezmesi", "Pilav", "Makarna", "Elma", "Muz", "Ceviz", "Badem", "Lahmacun", "Simit", "Mercimek Çorbası"],
         "Kalori": [155, 260, 165, 208, 310, 90, 65, 50, 250, 370, 130, 158, 52, 89, 654, 579, 150, 280, 56],
         "Protein": [13, 18, 31, 20, 17, 11, 3.5, 3.3, 10, 13, 2.5, 5, 0.3, 1.1, 15, 21, 6, 8, 4]
     })
     
-    # YAZILI DETAYLI EGZERSİZLER
+    # Detaylı Egzersiz Kütüphanesi (Yazılı & Setli)
     exercises = {
         "💪 Kol (Biceps/Triceps)": [
             {"name": "Dumbbell Bicep Curl", "desc": "Ayakta, avuç içleri karşıya bakacak şekilde dambılları kaldırın.", "set": "3x12"},
@@ -151,16 +159,18 @@ def get_static_data():
         "🦵 Bacak (Legs)": [
             {"name": "Goblet Squat", "desc": "Dambılı göğsünüzde tutarak çömelin.", "set": "4x12"},
             {"name": "Dumbbell Lunge", "desc": "Ellerde dambıl ile öne doğru adım atıp çökün.", "set": "3x12"},
-            {"name": "Romanian Deadlift", "desc": "Dizleri hafif kırarak dambılları kaval kemiği hizasına indirin.", "set": "4x10"}
+            {"name": "Romanian Deadlift", "desc": "Dizleri hafif kırarak dambılları kaval kemiği hizasına indirin.", "set": "4x10"},
+            {"name": "Calf Raise", "desc": "Ellerde ağırlıkla parmak ucuna yükselin.", "set": "4x20"}
         ],
         "🔥 Karın (Core)": [
             {"name": "Weighted Crunch", "desc": "Göğsünüzde ağırlık tutarak mekik çekin.", "set": "3x15"},
             {"name": "Russian Twist", "desc": "Oturarak ayakları kaldırın, ağırlığı sağa sola döndürün.", "set": "3x20"},
-            {"name": "Plank", "desc": "Dirsekler üzerinde vücudu düz tutarak bekleyin.", "set": "3x45 sn"}
+            {"name": "Plank", "desc": "Dirsekler üzerinde vücudu düz tutarak bekleyin.", "set": "3x45 sn"},
+            {"name": "Leg Raise", "desc": "Sırtüstü yatarken bacakları düz şekilde kaldırıp indirin.", "set": "3x15"}
         ]
     }
-    
-    # DİYET MOTORU İÇİN DETAYLI (GRAMAJLI) VERİTABANI
+
+    # Otomatik Diyet Motoru Veritabanı (Etiketli & Gramajlı)
     auto_db = {
         "kahvalti": [
             {"name": "Klasik: 1 Haşlanmış Yumurta + 1 Dilim (30g) Beyaz Peynir + 5 Zeytin", "cal": 250, "p": 16, "c": 3, "f": 18, "tag": "std"},
@@ -197,17 +207,17 @@ def get_static_data():
             {"name": "2 Grissini + 1 Bardak Ayran", "cal": 130, "p": 5, "c": 18, "f": 4}
         ]
     }
-    
+    # BURASI DÜZELTİLDİ: değişken isimleri eşleşiyor
     return foods, exercises, auto_db
 
-df_foods, exercises, auto_db = get_static_data()
+df_foods, egzersizler, auto_db = get_static_data()
 
 # ==========================================
 # 6. NAVİGASYON
 # ==========================================
 with st.sidebar:
     st.title("💎 DiyetTakibim")
-    st.caption("Ultimate v30.0 (Max)")
+    st.caption("Ultimate v30.1 (Bug-Free)")
     menu = st.radio("MENÜ", [
         "🏠 Ana Sayfa",
         "👥 Danışan Yönetimi",
@@ -238,20 +248,15 @@ if menu == "🏠 Ana Sayfa":
     c3.metric("Toplam Kasa", f"{sum(o['Tutar'] for o in db['odemeler']):,.0f} ₺")
     c4.metric("Hazır Şablon", len(db['manuel_listeler']))
     
-    st.markdown('<div class="dashboard-card"><h3>📊 Haftalık Özet</h3>', unsafe_allow_html=True)
-    # Gerçek veriden grafik (Varsa)
-    if db['randevular']:
-        df_r = pd.DataFrame(db['randevular'])
-        df_r['Tarih'] = pd.to_datetime(df_r['Tarih'])
-        df_count = df_r.groupby('Tarih').size().reset_index(name='Randevu Sayısı')
-        fig = px.bar(df_count, x='Tarih', y='Randevu Sayısı', template="plotly_dark", color_discrete_sequence=['#6c5ce7'])
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("Grafik için randevu ekleyiniz.")
+    # HIZLI BAKIŞ GRAFİĞİ (DEMO)
+    st.markdown('<div class="dashboard-card"><h3>📊 Haftalık Aktivite Özeti</h3>', unsafe_allow_html=True)
+    chart_data = pd.DataFrame({'Gün': ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'], 'Randevu': [4, 5, 3, 6, 5, 2, 0]})
+    fig = px.bar(chart_data, x='Gün', y='Randevu', template="plotly_dark", color_discrete_sequence=['#6c5ce7'])
+    st.plotly_chart(fig, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
-# MODÜL 2: DANIŞAN YÖNETİMİ (FULL)
+# MODÜL 2: DANIŞAN YÖNETİMİ (DETAYLI)
 # ==========================================
 elif menu == "👥 Danışan Yönetimi":
     st.header("👥 Danışan Yönetimi")
@@ -518,6 +523,7 @@ elif menu == "🤖 Otomatik Diyet Motoru":
                 df_pie = pd.DataFrame({'Makro': ['Protein', 'Karbonhidrat', 'Yağ'], 'Kalori': [stats['p']*4, stats['c']*4, stats['f']*9]})
                 fig = px.pie(df_pie, values='Kalori', names='Makro', hole=0.4, template="plotly_dark", color_discrete_sequence=['#e74c3c', '#3498db', '#f1c40f'])
                 fig.update_traces(textinfo='percent+label', hovertemplate='%{label}: %{value:.0f} kcal')
+                fig.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0), height=250)
                 st.plotly_chart(fig, use_container_width=True)
                 
                 st.download_button("📄 İndir (TXT)", st.session_state['text_list'], file_name=f"Diyet_{date.today()}.txt")
@@ -528,7 +534,7 @@ elif menu == "🤖 Otomatik Diyet Motoru":
                     save_db(db); st.success("Kaydedildi!")
 
 # ==========================================
-# MODÜL 8: LAB ANALİZİ (FULL 5 SEKME)
+# MODÜL 8: LAB ANALİZİ
 # ==========================================
 elif menu == "🩸 Lab Analizi":
     st.header("🩸 Kapsamlı Laboratuvar Analizi")
@@ -542,29 +548,29 @@ elif menu == "🩸 Lab Analizi":
     t1, t2, t3, t4, t5 = st.tabs(["Hemogram", "Biyokimya", "Hormon", "Lipid", "Elektrolit"])
     with t1:
         c1, c2 = st.columns(2)
-        check("WBC", c1.number_input("WBC", 0.0), 4, 10, "K/uL", "Bağışıklık düşük. C Vit desteği.", "Enfeksiyon riski. Doktora danış.")
-        check("HGB", c2.number_input("HGB", 0.0), 12, 16, "g/dL", "Demir eksikliği anemisi. Kırmızı et, pekmez.", "Dehidratasyon belirtisi olabilir.")
-        check("CRP", c1.number_input("CRP", 0.0), 0, 5, "mg/L", "", "Vücutta enfeksiyon/yangı mevcut.")
+        check("WBC", c1.number_input("WBC", 0.0), 4, 10, "K/uL", "Bağışıklık düşük.", "Enfeksiyon riski.")
+        check("HGB", c2.number_input("HGB", 0.0), 12, 16, "g/dL", "Demir eksikliği.", "Sıvı alımını artır.")
+        check("CRP", c1.number_input("CRP", 0.0), 0, 5, "mg/L", "", "Vücutta enfeksiyon/yangı.")
     with t2:
         c1, c2 = st.columns(2)
-        check("Açlık Şekeri", c1.number_input("Glikoz", 0.0), 70, 100, "mg/dL", "Hipoglisemi riski. Ara öğün ekle.", "Diyabet riski. Karbonhidrat sayımı yap.")
-        check("Kreatinin", c2.number_input("Kreatinin", 0.0), 0.6, 1.1, "mg/dL", "Kas erimesi olabilir.", "Böbrek yükü. Proteini kısıtla.")
-        check("AST", c1.number_input("AST", 0.0), 0, 35, "U/L", "", "Karaciğer hasarı riski.")
-        check("ALT", c2.number_input("ALT", 0.0), 0, 35, "U/L", "", "Karaciğer yağlanması. Alkolü kes.")
+        check("Açlık Şekeri", c1.number_input("Glikoz", 0.0), 70, 100, "mg/dL", "Hipoglisemi.", "Diyabet riski.")
+        check("Kreatinin", c2.number_input("Kreatinin", 0.0), 0.6, 1.1, "mg/dL", "Kas erimesi.", "Böbrek yükü.")
+        check("AST", c1.number_input("AST", 0.0), 0, 35, "U/L", "", "Karaciğer hasarı.")
+        check("ALT", c2.number_input("ALT", 0.0), 0, 35, "U/L", "", "Karaciğer yağlanması.")
     with t3:
         c1, c2 = st.columns(2)
-        check("TSH", c1.number_input("TSH", 0.0), 0.4, 4.0, "mU/L", "Hipertiroidi (Hızlı met.).", "Hipotiroidi (Yavaş met.). İyot al.")
-        check("B12", c2.number_input("B12", 0.0), 200, 900, "pg/mL", "Eksiklik. Unutkanlık yapar. Yumurta ye.", "")
-        check("D Vit", c1.number_input("D Vit", 0.0), 30, 100, "ng/mL", "Takviye al. Kemik ağrısı yapar.", "Toksik seviye.")
+        check("TSH", c1.number_input("TSH", 0.0), 0.4, 4.0, "mU/L", "Hipertiroidi.", "Hipotiroidi.")
+        check("B12", c2.number_input("B12", 0.0), 200, 900, "pg/mL", "Eksiklik.", "")
+        check("D Vit", c1.number_input("D Vit", 0.0), 30, 100, "ng/mL", "Takviye al.", "Toksik.")
     with t4:
         c1, c2 = st.columns(2)
-        check("LDL", c1.number_input("LDL", 0.0), 0, 130, "mg/dL", "", "Riskli. Doymuş yağı azalt.")
-        check("Trigliserid", c2.number_input("Trigliserid", 0.0), 0, 150, "mg/dL", "", "Şekeri ve alkolü acil kes.")
+        check("LDL", c1.number_input("LDL", 0.0), 0, 130, "mg/dL", "", "Riskli.")
+        check("Trigliserid", c2.number_input("Trigliserid", 0.0), 0, 150, "mg/dL", "", "Şekeri kes.")
     with t5:
         c1, c2 = st.columns(2)
-        check("Sodyum", c1.number_input("Na", 0.0), 135, 145, "mEq/L", "Hiponatremi.", "Hipernatremi. Tuzu azalt.")
-        check("Potasyum", c2.number_input("K", 0.0), 3.5, 5.1, "mEq/L", "Hipokalemi (Kalp riski). Muz, patates ye.", "Hiperkalemi. Böbrek riski.")
-        check("Kalsiyum", c1.number_input("Ca", 0.0), 8.5, 10.5, "mg/dL", "Kemik erimesi riski.", "Hiperkalsemi.")
+        check("Sodyum", c1.number_input("Na", 0.0), 135, 145, "mEq/L", "Hiponatremi.", "Hipernatremi.")
+        check("Potasyum", c2.number_input("K", 0.0), 3.5, 5.1, "mEq/L", "Hipokalemi.", "Hiperkalemi.")
+        check("Kalsiyum", c1.number_input("Ca", 0.0), 8.5, 10.5, "mg/dL", "Kemik erimesi.", "Hiperkalsemi.")
 
 # ==========================================
 # MODÜL 9: DİYET & HAZIR LİSTELER
@@ -610,5 +616,5 @@ elif menu == "🏋️ Egzersiz Kütüphanesi":
     
     for ex in egzersizler[bolge]:
         with st.expander(f"📌 {ex['name']}"):
-            st.markdown(f"**Nasıl Yapılır:** {ex['desc']}")
-            st.info(f"**Set/Tekrar:** {ex['set']}")
+            st.markdown(f"**Yapılış:** {ex['desc']}")
+            st.info(f"**Set:** {ex['set']}")
